@@ -1,0 +1,70 @@
+---
+title: "Statistical inference project 2"
+author: "YOUNGSANG KIM"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+editor_options:
+  chunk_output_type: console
+---
+### EDA
+```{r data}
+library(dplyr, warn.conflicts = F)
+library(ggplot2)
+data("ToothGrowth")
+summary(ToothGrowth)
+str(ToothGrowth)
+ToothGrowth$dose<-as.factor(ToothGrowth$dose) # Convert dose to a factor
+```  
+
+
+Plot tooth length ('len') vs. the dose amount ('dose'), broken out by supplement delivery method ('supp')
+```{r plot, fig.height = 2, fig.width = 5}
+ggplot(aes(x=dose, y=len), data=ToothGrowth) + geom_boxplot(aes(fill=dose)) +
+  xlab("Dose Amount") + ylab("Tooth Length") + facet_grid(~ supp)
+```  
+
+
+Plot tooth length ('len') vs. supplement delivery method ('supp') broken out by the dose amount ('dose')
+```{r, fig.height = 2 , fig.width = 5}
+ggplot(aes(x=supp, y=len), data=ToothGrowth) + geom_boxplot(aes(fill=supp)) +
+  xlab("Supplement Delivery") + ylab("Tooth Length") + facet_grid(~ dose)
+```
+
+
+### Hypothesis Tests  
+Now we want to further compare teeth growth by supplement type and dose levels.  
+This time we'll use statistical tests, t-test.
+```{r}
+len_1 <- ToothGrowth %>% filter(dose %in% c(0.5,1)) %>% select(len) %>% unlist()
+dose_1 <- ToothGrowth %>% filter(dose %in% c(0.5,1)) %>% select(dose) %>% unlist()
+t.test(len_1 ~ dose_1, paired = FALSE)
+```
+```{r}
+len_2 <- ToothGrowth %>% filter(dose %in% c(0.5,2)) %>% select(len) %>% unlist()
+dose_2 <- ToothGrowth %>% filter(dose %in% c(0.5, 2)) %>% select(dose) %>% unlist()
+t.test(len_2 ~ dose_2, paired = FALSE)
+```
+```{r}
+len_3 <- ToothGrowth %>% filter(dose %in% c(1,2)) %>% select(len) %>% unlist()
+dose_3 <- ToothGrowth %>% filter(dose %in% c(1,2)) %>% select(dose) %>% unlist()
+t.test(len_3 ~ dose_3, paired = FALSE)
+```
+We went through all possible combinations of levels.  
+Thus, we reject Ho. In other words there appears to be a positive relationship between dose level and teeth length  
+```{r}
+len <- ToothGrowth %>% select(len) %>% unlist()
+supp <- ToothGrowth %>% select(supp) %>% unlist()
+t.test(len~supp, paired=F)
+```
+The p-value is 0.06, and the confidence interval contains zero.  
+This indicates that we can not reject the null hypothesis that the different supplement types have no effect on tooth length.  
+
+
+### Conclusions  
+A. Increasing the dose level leads to increased tooth growth.  
+B. Supplement type has no effect on tooth growth.  
+Given the following assumption:  
+A. The sample is representative of the population.  
+B. The distribution of the sample means follows the Central Limit Theorem.
